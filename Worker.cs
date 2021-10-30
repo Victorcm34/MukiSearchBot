@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using MukiSearchBot.Interfaces;
 using MukiSearchBot.Services;
 using Telegram.Bot;
+using Telegram.Bot.Args;
 
 namespace MukiSearchBot
 {
@@ -19,23 +20,25 @@ namespace MukiSearchBot
         private readonly ITelegramService _teleService;
         private readonly ILogger<Worker> _logger;
 
-        public Worker(ILogger<Worker> logger, IConfiguration configuration, ITelegramBotClient bot, ITelegramService teleService)
+        public Worker(ILogger<Worker> logger, IConfiguration configuration, ITelegramService teleService)
         {
             _configuration = configuration;
-            _bot = new TelegramBotClient(_configuration["TelegramBotKey"]);
             _teleService = teleService;
             _logger = logger;
+            _bot = new TelegramBotClient(_configuration["TelegramBotId"]);
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             _bot.StartReceiving(null, new CancellationToken());
+            _bot.OnMessage += SendMessage;
+            Console.ReadLine();
+        }
 
-            while (!stoppingToken.IsCancellationRequested)
-            {
-                _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
-                await Task.Delay(1000, stoppingToken);
-            }
+        private void SendMessage(object sender, MessageEventArgs e)
+        {
+            string message = _teleService.FindTittle(e.Message.Text);
+            _bot.SendTextMessageAsync(e.Message.Chat.Id, message);
         }
     }
 }

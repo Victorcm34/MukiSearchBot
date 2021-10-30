@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using MukiSearchBot.Interfaces;
 using MukiSearchBot.Services;
+using Telegram.Bot;
 
 namespace MukiSearchBot
 {
