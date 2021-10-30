@@ -7,7 +7,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using MukiSearchBot.Interfaces;
+using MukiSearchBot.Models;
 using MukiSearchBot.Services;
+using Newtonsoft.Json;
 using Telegram.Bot;
 using Telegram.Bot.Args;
 
@@ -35,10 +37,35 @@ namespace MukiSearchBot
             Console.ReadLine();
         }
 
-        private void SendMessage(object sender, MessageEventArgs e)
+        private async void SendMessage(object sender, MessageEventArgs e)
         {
-            string message = _teleService.FindTittle(e.Message.Text);
-            _bot.SendTextMessageAsync(e.Message.Chat.Id, message);
+            try
+            {
+                List<SearchResult> results = await _teleService.FindTittle(e.Message.Text);
+
+                // if (results.Count() > 1)
+                // {
+                //     IEnumerable<string> options = GetOptions(results);
+                //     await _bot.SendPollAsync(e.Message.Chat.Id, "¿Cual estás buscando?", options.Take(4));
+                // }
+                await _bot.SendPhotoAsync(e.Message.Chat.Id, results[0].Image);
+            }
+            catch (System.Exception)
+            {
+                await _bot.SendTextMessageAsync(e.Message.Chat.Id, "Escribe un título de serie o película válido");
+            }
+
+        }
+
+        private IEnumerable<string> GetOptions(List<SearchResult> results)
+        {
+            List<string> options = new List<string>();
+
+            foreach (var item in results)
+            {
+                options.Add(item.Image);
+            }
+            return options;
         }
     }
 }

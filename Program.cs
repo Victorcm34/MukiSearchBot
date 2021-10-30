@@ -22,6 +22,7 @@ namespace MukiSearchBot
                 .ConfigureServices((hostContext, services) =>
                 {
                     services.AddHostedService<Worker>();
+                    services.AddHttpClient<IimdbApi, ServiceImdb>();
                     services.AddTransient<ITelegramService,TelegramService>();
                 });
     }
