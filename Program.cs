@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using MukiSearchBot.Interfaces;
+using MukiSearchBot.Services;
 
 namespace MukiSearchBot
 {
@@ -19,6 +21,7 @@ namespace MukiSearchBot
                 .ConfigureServices((hostContext, services) =>
                 {
                     services.AddHostedService<Worker>();
+                    services.AddTransient<ITelegramService,TelegramService>();
                 });
     }
 }

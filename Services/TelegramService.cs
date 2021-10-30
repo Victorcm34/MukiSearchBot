@@ -1,10 +1,12 @@
+using System;
 using System.Threading;
 using Microsoft.Extensions.Configuration;
+using MukiSearchBot.Interfaces;
 using Telegram.Bot;
 
 namespace MukiSearchBot.Services
 {
-    public class TelegramService
+    public class TelegramService : ITelegramService
     {
         private readonly IConfiguration _configuration;
         private ITelegramBotClient _bot;
@@ -17,6 +19,7 @@ namespace MukiSearchBot.Services
         public void StartBot()
         {
             _bot.StartReceiving(null, new CancellationToken());
+            Console.WriteLine("Bot started");
         }
     }
 }
