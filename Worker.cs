@@ -7,8 +7,11 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using MukiSearchBot.Interfaces;
+using MukiSearchBot.Models;
 using MukiSearchBot.Services;
+using Newtonsoft.Json;
 using Telegram.Bot;
+using Telegram.Bot.Args;
 
 namespace MukiSearchBot
 {
@@ -19,23 +22,50 @@ namespace MukiSearchBot
         private readonly ITelegramService _teleService;
         private readonly ILogger<Worker> _logger;
 
-        public Worker(ILogger<Worker> logger, IConfiguration configuration, ITelegramBotClient bot, ITelegramService teleService)
+        public Worker(ILogger<Worker> logger, IConfiguration configuration, ITelegramService teleService)
         {
             _configuration = configuration;
-            _bot = new TelegramBotClient(_configuration["TelegramBotKey"]);
             _teleService = teleService;
             _logger = logger;
+            _bot = new TelegramBotClient(_configuration["TelegramBotId"]);
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             _bot.StartReceiving(null, new CancellationToken());
+            _bot.OnMessage += SendMessage;
+            Console.ReadLine();
+        }
 
-            while (!stoppingToken.IsCancellationRequested)
+        private async void SendMessage(object sender, MessageEventArgs e)
+        {
+            try
             {
-                _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
-                await Task.Delay(1000, stoppingToken);
+                List<SearchResult> results = await _teleService.FindTittle(e.Message.Text);
+
+                // if (results.Count() > 1)
+                // {
+                //     IEnumerable<string> options = GetOptions(results);
+                //     await _bot.SendPollAsync(e.Message.Chat.Id, "¿Cual estás buscando?", options.Take(4));
+                // }
+                await _bot.SendPhotoAsync(e.Message.Chat.Id, results[0].Image);
             }
+            catch (System.Exception)
+            {
+                await _bot.SendTextMessageAsync(e.Message.Chat.Id, "Escribe un título de serie o película válido");
+            }
+
+        }
+
+        private IEnumerable<string> GetOptions(List<SearchResult> results)
+        {
+            List<string> options = new List<string>();
+
+            foreach (var item in results)
+            {
+                options.Add(item.Image);
+            }
+            return options;
         }
     }
 }

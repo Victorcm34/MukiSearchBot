@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using MukiSearchBot.Interfaces;
 using MukiSearchBot.Services;
+using Telegram.Bot;
 
 namespace MukiSearchBot
 {
@@ -21,6 +22,7 @@ namespace MukiSearchBot
                 .ConfigureServices((hostContext, services) =>
                 {
                     services.AddHostedService<Worker>();
+                    services.AddHttpClient<IimdbApi, ServiceImdb>();
                     services.AddTransient<ITelegramService,TelegramService>();
                 });
     }
